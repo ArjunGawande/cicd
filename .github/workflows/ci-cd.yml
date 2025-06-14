@@ -56,5 +56,5 @@ jobs:
           cd frontend
           npm ci
           npm run build
-           sudo cp -r dist/* ${{ secrets.VM_WEB_PATH }}
+          sudo cp -r dist/* ${{ secrets.VM_WEB_PATH }}
           sudo systemctl reload nginx
