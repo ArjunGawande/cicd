@@ -62,11 +62,14 @@ jobs:
         key: ${{ secrets.VM_SSH_KEY }}
         port: ${{ secrets.VM_PORT || 22 }}
         script: |
-          # Navigate to your project directory
-          cd ${{ secrets.VM_PROJECT_PATH || '/var/www/html' }}
+          # Navigate to git repository root
+          cd ${{ secrets.VM_PROJECT_PATH }}
           
           # Pull latest changes
           git pull origin main
+          
+          # Navigate to frontend folder
+          cd frontend
           
           # Install dependencies (if package.json changed)
           npm ci
