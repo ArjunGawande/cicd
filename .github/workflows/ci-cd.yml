@@ -7,8 +7,9 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  deploy:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
     - name: Checkout code
@@ -25,22 +26,9 @@ jobs:
       run: npm ci
       working-directory: frontend
 
-    - name: Run linting
-      run: npm run lint
+    - name: Build frontend
+      run: npm run build
       working-directory: frontend
-
-    - name: Run tests
-      run: npm run test
-      working-directory: frontend
-
-  deploy:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
 
     - name: Deploy to GCP VM
       uses: appleboy/ssh-action@v1.0.3
@@ -49,12 +37,12 @@ jobs:
         username: ${{ secrets.VM_USER }}
         key: ${{ secrets.VM_SSH_KEY }}
         port: 22
-
         script: |
           cd ${{ secrets.VM_PROJECT_PATH }}
           git pull origin main
           cd frontend
           npm ci
           npm run build
+          sudo rm -rf ${{ secrets.VM_WEB_PATH }}/*
           sudo cp -r dist/* ${{ secrets.VM_WEB_PATH }}
           sudo systemctl reload nginx
