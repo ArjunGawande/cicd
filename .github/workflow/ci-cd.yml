@@ -1,0 +1,128 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run linting
+      run: npm run lint
+      continue-on-error: false
+      
+    - name: Run tests
+      run: npm run test
+      
+    - name: Build application
+      run: npm run build
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist-files
+        path: dist/
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: dist-files
+        path: dist/
+        
+    - name: Deploy to GCP VM
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VM_HOST }}
+        username: ${{ secrets.VM_USER }}
+        key: ${{ secrets.VM_SSH_KEY }}
+        port: ${{ secrets.VM_PORT || 22 }}
+        script: |
+          # Navigate to your project directory
+          cd ${{ secrets.VM_PROJECT_PATH || '/var/www/html' }}
+          
+          # Pull latest changes
+          git pull origin main
+          
+          # Install dependencies (if package.json changed)
+          npm ci
+          
+          # Build the project
+          npm run build
+          
+          # Copy build files to web server directory
+          sudo cp -r dist/* ${{ secrets.VM_WEB_PATH || '/var/www/html' }}/
+          
+          # Restart web server (adjust based on your server)
+          sudo systemctl reload nginx
+          # OR sudo systemctl reload apache2
+          
+          # Optional: Clear any caches
+          # sudo systemctl restart nginx
+          
+    # Alternative: Deploy using SCP (if you prefer file transfer)
+    # - name: Copy files to VM
+    #   uses: appleboy/scp-action@v0.1.7
+    #   with:
+    #     host: ${{ secrets.VM_HOST }}
+    #     username: ${{ secrets.VM_USER }}
+    #     key: ${{ secrets.VM_SSH_KEY }}
+    #     port: ${{ secrets.VM_PORT || 22 }}
+    #     source: "dist/*"
+    #     target: ${{ secrets.VM_WEB_PATH || '/var/www/html' }}
+    #     
+    # - name: Restart web server
+    #   uses: appleboy/ssh-action@v1.0.3
+    #   with:
+    #     host: ${{ secrets.VM_HOST }}
+    #     username: ${{ secrets.VM_USER }}
+    #     key: ${{ secrets.VM_SSH_KEY }}
+    #     port: ${{ secrets.VM_PORT || 22 }}
+    #     script: sudo systemctl reload nginx
+
+  security-scan:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run security audit
+      run: npm audit --audit-level moderate
+      
+    - name: Check for vulnerabilities
+      run: npx audit-ci --moderate
