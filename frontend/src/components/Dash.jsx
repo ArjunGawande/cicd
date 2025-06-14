@@ -9,7 +9,7 @@ export default function Dashboard() {
                 <h1 className="text-5xl font-extrabold mb-6 text-white drop-shadow-lg">Welcome to College Dashboard</h1>
                 <p className="text-lg mb-6 text-white opacity-90">Manage and explore all your college resources in one place.</p>
                 <button 
-                    className="px-6 py-3 bg-gradient-to-r from-purple-500 to-green-500 text-white font-semibold rounded-lg hover:scale-105 transition-transform transform"
+                    className="px-6 py-3 bg-gradient-to-r from-purple-500 to-black text-white font-semibold rounded-lg hover:scale-105 transition-transform transform"
                     onClick={() => navigate('/login')}
                 >
                     Login
