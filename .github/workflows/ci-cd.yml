@@ -66,10 +66,7 @@ jobs:
         key: ${{ secrets.VM_SSH_KEY }}
         port: ${{ secrets.VM_PORT || 22 }}
         script: |
-          cd ${{ secrets.VM_PROJECT_PATH }}
-          git pull origin main
-          cd frontend
-          npm ci
-          npm run build
+          sudo rm -rf ${{ secrets.VM_WEB_PATH || '/var/www/html' }}/*
+          sudo mkdir -p ${{ secrets.VM_WEB_PATH || '/var/www/html' }}
           sudo cp -r dist/* ${{ secrets.VM_WEB_PATH || '/var/www/html' }}/
           sudo systemctl reload nginx
