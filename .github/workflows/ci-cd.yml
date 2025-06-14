@@ -48,7 +48,8 @@ jobs:
         host: ${{ secrets.VM_HOST }}
         username: ${{ secrets.VM_USER }}
         key: ${{ secrets.VM_SSH_KEY }}
-        port: ${{ secrets.VM_PORT || 22 }}
+        port: 22
+
         script: |
           cd ${{ secrets.VM_PROJECT_PATH }}
           git pull origin main
