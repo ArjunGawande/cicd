@@ -7,7 +7,7 @@ export default function Dashboard() {
         <div className="min-h-screen flex items-center justify-center font-sans bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 px-4">
             <div className="bg-white/20 backdrop-blur-lg p-10 rounded-2xl border border-white/30 shadow-2xl w-full max-w-xl text-center">
                 <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-white drop-shadow-xl">
-                    🎓 College Dashboard
+                    Test page
                 </h1>
                 <p className="text-lg text-white/90 mb-8">
                     Everything you need to manage your college in one place.
