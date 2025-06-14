@@ -33,16 +33,6 @@ jobs:
       run: npm run test
       working-directory: frontend
 
-    - name: Build application
-      run: npm run build
-      working-directory: frontend
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: dist-files
-        path: frontend/dist/
-
   deploy:
     needs: test
     runs-on: ubuntu-latest
@@ -52,12 +42,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: dist-files
-        path: dist/
-
     - name: Deploy to GCP VM
       uses: appleboy/ssh-action@v1.0.3
       with:
@@ -66,7 +50,10 @@ jobs:
         key: ${{ secrets.VM_SSH_KEY }}
         port: ${{ secrets.VM_PORT || 22 }}
         script: |
-          sudo rm -rf ${{ secrets.VM_WEB_PATH || '/var/www/html' }}/*
-          sudo mkdir -p ${{ secrets.VM_WEB_PATH || '/var/www/html' }}
+          cd ${{ secrets.VM_PROJECT_PATH }}
+          git pull origin main
+          cd frontend
+          npm ci
+          npm run build
           sudo cp -r dist/* ${{ secrets.VM_WEB_PATH || '/var/www/html' }}/
           sudo systemctl reload nginx
