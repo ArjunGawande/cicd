@@ -10,7 +10,7 @@ export default function Dashboard() {
                     Test page
                 </h1>
                 <p className="text-lg text-white/90 mb-8">
-                    Arjun Gawande
+                    Hello from Arjun Gawande
                 </p>
                 <button
                     onClick={() => navigate('/login')}
